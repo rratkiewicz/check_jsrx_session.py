@@ -1,3 +1,24 @@
+#
+# Author: Ryan Ratkiewicz (<ryan@ryanrat.com>)
+# get-session.py
+# Last-Modified:  2015-12-22
+#
+# get_session.py was originally intended to pull a specific session from the Juniper SRX Firewall via PYEZ from a Nagios host.
+# The script relies upon version 2.7 of Python, although earlier versions may also work. 
+# 
+# Example:
+# python get-session.py myfirewall.corp.com
+# 		Will return all sessions in the firewall in a pretty print format.
+#
+# python get-session.py myfirewall.corp.com --src_address x.x.x.x --dst_address y.y.y.y --dst_port 80 --protocol tcp
+#		Will return all sessions that match specified criteria.
+#
+# python get-session.py myfirewall.corp.com --src_addrsss x.x.x.x --dst_address y.y.y.y --dst_port 80 --protocol tcp --nagios
+#		Will return all sessions that match specified criteria, but evaluate only the first match in a Nagios output format.
+#		Output Example:
+#			SESSION OK - Session ID 31432 | bytes_in=17515 bytes_out=4786 configured_timeout=43200 timeout=43094
+
+
 import sys
 import argparse
 import ipaddress
@@ -7,6 +28,13 @@ from jnpr.junos import Device
 from jnpr.junos.exception import ConnectError
 import pprint
 
+# get_session returns a list of dictionary items that contain Juniper SRX session data based upon the input criteria given.
+# device is the only mandatory field for this, as if no other options are specified, all sessions will be returned.
+# if the SRX is clustered, Backup sessions from the passive device are not included in the list.
+# Since the SRX returns XML data, we parse the XML using etree, and place the corresponding data session elements inside a 
+# dictionary.  We then also parse each flow or wing element of the session and add it to the dictionary.  
+# In order to distinguish between 'in' and 'out' wings, we prepend the dictionary with the 'direction' element of the wing,
+# thus giving us a unique key for the flow.
 
 def get_session(source_ip,destination_ip,destination_port,protocol,device):
 	dev = Device(host=device)
@@ -32,10 +60,6 @@ def get_session(source_ip,destination_ip,destination_port,protocol,device):
 	
 	flow_request = dev.rpc.get_flow_session_information(**flow_args)
 	dev.close()
-	
-	
-
-
 
 	root = ET.fromstring(etree.tostring(flow_request))
 	session_list = []
@@ -73,6 +97,11 @@ def get_session(source_ip,destination_ip,destination_port,protocol,device):
 
 	return session_list;
 
+
+# Main declares a standard parser and passes the arguments to get_session.  Once the output is returned back to main, we evaluate if args.nagios
+# is being used, and if so, it returns output that will allow Nagios to evaluate the health of the service, and also pass perf data after the '|'
+# (pipe) delimiter.  If Nagios is not specified, the main function returns a pretty printed version of the session data.
+
 def main(argv):
 	source_ip = None
 	destination_ip = None
@@ -101,7 +130,7 @@ def main(argv):
 			print "SESSION CRITICAL"
 	else:
 		pp = pprint.PrettyPrinter(indent=4)
-		pp.pprint(session[0])
+		pp.pprint(session)
 
 
 if __name__ == "__main__":
