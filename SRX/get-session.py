@@ -5,6 +5,7 @@ from lxml import etree
 import xml.etree.ElementTree as ET
 from jnpr.junos import Device
 from jnpr.junos.exception import ConnectError
+import pprint
 
 
 def get_session(source_ip,destination_ip,destination_port,protocol,device):
@@ -28,22 +29,19 @@ def get_session(source_ip,destination_ip,destination_port,protocol,device):
 
 	if protocol != None :
 		flow_args['protocol'] = protocol
-
-	#flow_args['node'] = 'local'
 	
 	flow_request = dev.rpc.get_flow_session_information(**flow_args)
 	dev.close()
 	
+	
+
 
 
 	root = ET.fromstring(etree.tostring(flow_request))
-	
+	session_list = []
+
 	for session in root.findall('./multi-routing-engine-item/flow-session-information/flow-session'):
 		session_state = session.find('session-state')
-
-		if session_state.text == 'Backup' :
-			break
-		
 		session_identifier = session.find('session-identifier')
 		policy = session.find('policy')
 		configured_timeout = session.find('configured-timeout')
@@ -51,10 +49,10 @@ def get_session(source_ip,destination_ip,destination_port,protocol,device):
 		start_time = session.find('start-time')
 		duration = session.find('duration')
 
+		session_dict = {'session-id' : session_identifier.text, 'session-state' : session_state.text, 'policy' : policy.text, 'timeout' : timeout.text, \
+			'start-time' : start_time.text, 'duration' : duration.text, 'configured-timeout' : configured_timeout.text }
 
-		print ''
-		print "sessionId = " + session_identifier.text,", sessionState = " + session_state.text + ", policy = " + policy.text + ", confTimeout = " + configured_timeout.text +\
-		", timeout = " + timeout.text + ", strTime = "+ start_time.text + ", duration = " + duration.text + "," ,
+		flow_list = []
 
 		for flow in session.findall('./flow-information'):
 			direction = flow.find('direction')
@@ -65,11 +63,15 @@ def get_session(source_ip,destination_ip,destination_port,protocol,device):
 			protocol = flow.find('protocol')
 			byte_count = flow.find('byte-cnt')
 
-			print direction.text + ":source = " + source_address.text  + ", " + direction.text + ":" + "destination = " + destination_address.text + ", " + direction.text +\
-			":" + "sourcePrt = " + source_port.text + ", " + direction.text + ":" + "dstPort = " + destination_port.text + ", " + direction.text + ":" + "protocol = " +\
-			protocol.text + ", " + direction.text + ":" + "bytes = " + byte_count.text ,
+			session_dict.update({ direction.text + ':source-address' : source_address.text, direction.text + ':destination-address' : destination_address.text, \
+			direction.text + ':source_port' : source_port.text, direction.text + ':destination-port' : destination_port.text, direction.text + ':protocol' : protocol.text,\
+			direction.text + ':byte-count' : byte_count.text })
+			
 
-	return;
+		if session_state.text == 'Active' :
+			session_list.append(session_dict.copy())
+
+	return session_list;
 
 def main(argv):
 	source_ip = None
@@ -85,10 +87,22 @@ def main(argv):
 	parser.add_argument("--dst_address", help="Destination address or prefix of desired session(s)")
 	parser.add_argument("--dst_port", help="Destination port of desired session(s)")
 	parser.add_argument("--protocol", help="TCP or UDP, or any supported SRX protocol")
+	parser.add_argument("--nagios", dest="nagios", action="store_true",  help="Nagios formatted output")
 
 	args = parser.parse_args()
 
-	get_session(args.src_address, args.dst_address, args.dst_port, args.protocol, args.device)
+	session = get_session(args.src_address, args.dst_address, args.dst_port, args.protocol, args.device)
+
+	if args.nagios :
+		if len(session)> 0 :
+			print 'SESSION OK - Session ID ' + session[0].get('session-id') + ' | bytes_in=' + session[0].get('In:byte-count') + ' bytes_out=' + session[0].get('Out:byte-count') \
+			+ ' configured_timeout=' + session[0].get('configured-timeout') + ' timeout=' + session[0].get('timeout') 
+		else:
+			print "SESSION CRITICAL"
+	else:
+		pp = pprint.PrettyPrinter(indent=4)
+		pp.pprint(session[0])
+
 
 if __name__ == "__main__":
 	main(sys.argv[1:])
