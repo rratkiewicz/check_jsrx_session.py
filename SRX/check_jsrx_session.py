@@ -136,7 +136,7 @@ def main(argv):
 			print 'OK - Session ID ' + session[0].get('session-id') + ' | bytes_in=' + session[0].get('In:byte-count') + ';bytes_out=' + session[0].get('Out:byte-count') \
 			+ ';configured_timeout=' + session[0].get('configured-timeout') + ';timeout=' + session[0].get('timeout') + ';;'
 		else:
-			print "SESSION CRITICAL"
+			print "CRITICAL"
 	else:
 		pp = pprint.PrettyPrinter(indent=4)
 		pp.pprint(session)
