@@ -118,12 +118,14 @@ def main(argv):
 
 
 	parser = argparse.ArgumentParser()
+	nagiosGroup = parser.add_mutually_exclusive_group()
 	parser.add_argument("device",help="Specify the hostname or IP address of your Juniper SRX")
 	parser.add_argument("--src_address", help="Source address or prefix of desired session(s)")
 	parser.add_argument("--dst_address", help="Destination address or prefix of desired session(s)")
 	parser.add_argument("--dst_port", help="Destination port of desired session(s)")
 	parser.add_argument("--protocol", help="TCP or UDP, or any supported SRX protocol")
-	parser.add_argument("--nagios", dest="nagios", action="store_true",  help="Nagios formatted output")
+	nagiosGroup.add_argument("--nagios_bytes", dest="nagios_bytes", action="store_true",  help="Nagios formatted output to return byte counts")
+	nagiosGroup.add_argument("--nagios_timeouts", dest="nagios_timeouts", action="store_true", help="Nagios formatted output to return session timeouts")
 	parser.add_argument("--username", help="Username to firewall, in the event ssh-keys are not available")
 	parser.add_argument("--password", help="Password to firewall, in the event ssh-keys are not available")
 
@@ -131,13 +133,17 @@ def main(argv):
 
 	session = get_session(args.src_address, args.dst_address, args.dst_port, args.protocol, args.device, args.username, args.password)
 
-	if args.nagios :
-		if len(session)> 0 :
+	if args.nagios_bytes :
+		if len(session) > 0 :
 			print 'OK - Session ID ' + session[0].get('session-id') + ' | bytes_in=' + session[0].get('In:byte-count') + ';bytes_out=' + session[0].get('Out:byte-count') \
-			+ ';configured_timeout=' + session[0].get('configured-timeout') + ';timeout=' + session[0].get('timeout') + ';;'
+			+ ';;'
 		else:
 			print "CRITICAL"
-	else:
+	elif args.nagios_timeouts :
+		if len(session) > 0 :
+			print 'OK - Session ID ' + session[0].get('session-id') + ' | configured_timeout=' + session[0].get('configured-timeout') + ';timeout=' + \
+			session[0].get('timeout') + ';;'
+	else :
 		pp = pprint.PrettyPrinter(indent=4)
 		pp.pprint(session)
 
