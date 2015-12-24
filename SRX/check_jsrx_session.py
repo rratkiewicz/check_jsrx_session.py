@@ -84,8 +84,6 @@ def get_session(source_ip,destination_ip,destination_port,protocol,device, usern
 		session_dict = {'session-id' : session_identifier.text, 'session-state' : session_state.text, 'policy' : policy.text, 'timeout' : timeout.text, \
 			'start-time' : start_time.text, 'duration' : duration.text, 'configured-timeout' : configured_timeout.text }
 
-		flow_list = []
-
 		for flow in session.findall('./flow-information'):
 			direction = flow.find('direction')
 			source_address = flow.find('source-address')
@@ -141,7 +139,8 @@ def main(argv):
 		
 		print 'OK - Session ID ' + session[0].get('session-id') + ' | bytes_in=' + session[0].get('In:byte-count') + ';bytes_out=' + session[0].get('Out:byte-count') \
 		+ ';;'
-		print 'Policy=' + session[0].get('policy') + ' Source=' + session[0].get('In:source-address') + ' Destination=' + session[0].get('In:destination-address')
+		print 'Policy=' + session[0].get('policy') + ' Source=' + session[0].get('In:source-address') + ' Destination=' + session[0].get('In:destination-address') + \
+		' DestinationPort=' + session[0].get('In:destination-port')
 		(sys.exit(0))
 		
 	elif args.nagios_timeouts :
@@ -151,7 +150,8 @@ def main(argv):
 
 		print 'OK - Session ID ' + session[0].get('session-id') + ' | configured_timeout=' + session[0].get('configured-timeout') + ';timeout=' + \
 		session[0].get('timeout') + ';;'
-		print 'Policy=' + session[0].get('policy') + ' Source=' + session[0].get('In:source-address') + ' Destination=' + session[0].get('In:destination-address')
+		print 'Policy=' + session[0].get('policy') + ' Source=' + session[0].get('In:source-address') + ' Destination=' + session[0].get('In:destination-address') + \
+		' DestinationPort=' + session[0].get('In:destination-port')
 		(sys.exit(0))
 	
 	else :
