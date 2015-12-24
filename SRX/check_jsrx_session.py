@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #
 # Author: Ryan Ratkiewicz (<ryan@ryanrat.com>)
 # check_jsrx_session.py
@@ -134,15 +135,25 @@ def main(argv):
 	session = get_session(args.src_address, args.dst_address, args.dst_port, args.protocol, args.device, args.username, args.password)
 
 	if args.nagios_bytes :
-		if len(session) > 0 :
-			print 'OK - Session ID ' + session[0].get('session-id') + ' | bytes_in=' + session[0].get('In:byte-count') + ';bytes_out=' + session[0].get('Out:byte-count') \
-			+ ';;'
-		else:
-			print "CRITICAL"
+		if len(session) == 0:
+			print 'CRITICAL - No session found'
+			sys.exit(2)
+		
+		print 'OK - Session ID ' + session[0].get('session-id') + ' | bytes_in=' + session[0].get('In:byte-count') + ';bytes_out=' + session[0].get('Out:byte-count') \
+		+ ';;'
+		print 'Policy=' + session[0].get('policy') + ' Source=' + session[0].get('In:source-address') + ' Destination=' + session[0].get('In:destination-address')
+		(sys.exit(0))
+		
 	elif args.nagios_timeouts :
-		if len(session) > 0 :
-			print 'OK - Session ID ' + session[0].get('session-id') + ' | configured_timeout=' + session[0].get('configured-timeout') + ';timeout=' + \
-			session[0].get('timeout') + ';;'
+		if len(session) == 0:
+			print 'CRITICAL - No session found'
+			sys.exit(2)
+
+		print 'OK - Session ID ' + session[0].get('session-id') + ' | configured_timeout=' + session[0].get('configured-timeout') + ';timeout=' + \
+		session[0].get('timeout') + ';;'
+		print 'Policy=' + session[0].get('policy') + ' Source=' + session[0].get('In:source-address') + ' Destination=' + session[0].get('In:destination-address')
+		(sys.exit(0))
+	
 	else :
 		pp = pprint.PrettyPrinter(indent=4)
 		pp.pprint(session)
