@@ -1,2 +1,3 @@
-Some semi-useful Juniper Scripts that leverage the PYEZ Python Library.
-
+get_session.py is intended to pull a specific session from the Juniper SRX
+Firewall via Juniper's Python PYEZ Library and report the output to a Nagios
+host.
