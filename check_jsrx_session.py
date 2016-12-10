@@ -95,7 +95,6 @@ def get_session(source_ip, destination_ip, destination_port, protocol, device,
         'session-state' : session_state.text, 'policy' : policy.text, 'timeout' : timeout.text,\
 		'start-time' : start_time.text, 'duration' : duration.text,
         'configured-timeout' : configured_timeout.text}
-        print session_identifier.text
 
         for flow in session.findall('./flow-information'):
             direction = flow.find('direction')
