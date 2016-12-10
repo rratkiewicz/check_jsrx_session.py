@@ -50,6 +50,7 @@ from jnpr.junos.exception import ConnectError
 
 def get_session(source_ip, destination_ip, destination_port, protocol, device,
                 username, password):
+
     if (username and password) != None:
         dev = Device(host=device, user=username, password=password)
     else:
@@ -90,10 +91,11 @@ def get_session(source_ip, destination_ip, destination_port, protocol, device,
         start_time = session.find('start-time')
         duration = session.find('duration')
 
-        session_dict = {'session-id' : session_identifier.text, 'session-state'\
-        : session_state.text, 'policy' : policy.text, 'timeout' : timeout.text, \
-		'start-time' : start_time.text, 'duration' : duration.text,\
+        session_dict = {'session-id' : session_identifier.text,\
+        'session-state' : session_state.text, 'policy' : policy.text, 'timeout' : timeout.text,\
+		'start-time' : start_time.text, 'duration' : duration.text,
         'configured-timeout' : configured_timeout.text}
+        print session_identifier.text
 
         for flow in session.findall('./flow-information'):
             direction = flow.find('direction')
@@ -114,7 +116,6 @@ def get_session(source_ip, destination_ip, destination_port, protocol, device,
 
         if session_state.text == 'Active':
             session_list.append(session_dict.copy())
-
     return session_list
 
 
