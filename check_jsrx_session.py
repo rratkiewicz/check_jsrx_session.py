@@ -3,6 +3,7 @@
 # Author: Ryan Ratkiewicz (<ryan ATSIGN ryanrat.com>)
 # check_jsrx_session.py
 # Last-Modified:  2016-12-08
+# Version 0.1.0
 #
 # get_session.py was originally intended to pull a specific session from the Juniper SRX Firewall
 # via PYEZ from a Nagios host. The script relies upon version 2.7 of Python, although earlier
