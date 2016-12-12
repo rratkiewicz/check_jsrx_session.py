@@ -1,9 +1,9 @@
-#!/usr/bin/python
-#
+#!/usr/bin/env python
+"""#
 # Author: Ryan Ratkiewicz (<ryan ATSIGN ryanrat.com>)
 # check_jsrx_session.py
-# Last-Modified:  2016-12-08
-# Version 0.1.0
+# Last-Modified:  2016-12-12
+# Version 0.1.1
 #
 # get_session.py was originally intended to pull a specific session from the Juniper SRX Firewall
 # via PYEZ from a Nagios host. The script relies upon version 2.7 of Python, although earlier
@@ -52,7 +52,7 @@
 #      'destination_prefix': 'x.x.x.x',
 #      'protocol': 'tcp',
 #      'source_prefix': 'y.y.y.y'}
-#   OK - Session ID 31539 | bytes_in=3884785;bytes_out=3843606;;
+#   OK - Session ID 31539 | bytes_in=3884785;bytes_out=3843606;;"""
 
 
 
@@ -64,11 +64,6 @@ from lxml import etree
 from jnpr.junos import Device
 from jnpr.junos.exception import ConnectError
 
-# get_session returns a list of dictionary items that contain Juniper SRX session data based upon
-# the input criteria given. device is the only mandatory field for this, as if no other options are
-# specified, all sessions will be returned. if the SRX is clustered, Backup sessions from the
-# passive device are not included in the list.
-
 # Since the SRX returns XML data, we parse the XML using etree, and place the corresponding data
 # session elements inside a dictionary.  We then also parse each flow or wing element of the
 # session and add it to the dictionary. In order to distinguish between 'in' and 'out' wings, we
@@ -77,6 +72,10 @@ from jnpr.junos.exception import ConnectError
 
 def get_session(source_ip, destination_ip, destination_port, protocol, device,
                 username, password, debug):
+    """get_session returns a list of dictionary items that contain Juniper SRX session data based upon
+    # the input criteria given. device is the only mandatory field for this, as if no other options are
+    # specified, all sessions will be returned. if the SRX is clustered, Backup sessions from the
+    # passive device are not included in the list.  Netconf must be enabled on the firewall."""
 
     if (username and password) != None:
         dev = Device(host=device, user=username, password=password)
@@ -128,7 +127,7 @@ def get_session(source_ip, destination_ip, destination_port, protocol, device,
         session_dict = {'session-id' : session_identifier.text,\
         'session-state' : session_state.text, 'policy' : policy.text, 'timeout' : timeout.text,\
 		'start-time' : start_time.text, 'duration' : duration.text,
-        'configured-timeout' : configured_timeout.text}
+                        'configured-timeout' : configured_timeout.text}
 
         for flow in session.findall('./flow-information'):
             direction = flow.find('direction')
@@ -152,14 +151,15 @@ def get_session(source_ip, destination_ip, destination_port, protocol, device,
     return session_list
 
 
-# Main declares a standard parser and passes the arguments to get_session.  Once
-# the output is returned back to main, we evaluate if args.nagios is being used,
-# and if so, it returns output that will allow Nagios to evaluate the health of
-# the service, and also pass perf data after the '|' (pipe) delimiter.  If Nagios
-# is not specified, the main function returns a pretty printed version of the
-# session data.
+
 
 def main(argv):
+    """# Main declares a standard parser and passes the arguments to get_session.  Once
+    # the output is returned back to main, we evaluate if args.nagios is being used,
+    # and if so, it returns output that will allow Nagios to evaluate the health of
+    # the service, and also pass perf data after the '|' (pipe) delimiter.  If Nagios
+    # is not specified, the main function returns a pretty printed version of the
+    # session data."""
 
     parser = argparse.ArgumentParser()
     nagiosGroup = parser.add_mutually_exclusive_group()
