@@ -50,7 +50,7 @@ from jnpr.junos.exception import ConnectError
 # the flow.
 
 def get_session(source_ip, destination_ip, destination_port, protocol, device,
-                username, password):
+                username, password, debug):
 
     if (username and password) != None:
         dev = Device(host=device, user=username, password=password)
@@ -144,11 +144,13 @@ def main(argv):
      available")
     parser.add_argument("--password", help="Password to firewall, in the event ssh-keys are not\
      available")
+    parser.add_argument("--debug", dest="debug", action="store_true", help="Debug connection and\
+    flow information")
 
     args = parser.parse_args()
 
     session = get_session(args.src_address, args.dst_address, args.dst_port, args.protocol,\
-              args.device, args.username, args.password)
+              args.device, args.username, args.password, args.debug)
 
     if args.nagios_bytes:
         if len(session) == 0:
