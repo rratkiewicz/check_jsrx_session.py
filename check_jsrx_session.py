@@ -28,6 +28,32 @@
 #
 # python check_jsrx_session.py --username XXXXXX --password YYYYYYY
 # Will return all sessions, but leverage a username and password in lieu of SSH keys.
+#
+# python check_jsrx_session.py myfirewall.corp.com --src_address x.x.x.x --dst_address y.y.y.y
+#   --dst_port 80 --protocol tcp --debug
+#   Will return all sessions that match the specified critera, and also show the facts and
+#   session parameters sent to the SRX.
+# Output Exmaple:
+# {   '2RE': True,
+#
+#    'HOME': '/cf/var/home/user',
+#    'RE0': {   'last_reboot_reason': '0x1:power cycle/failure',
+#               'model': 'RE-SRX210HE2',
+#               'status': 'OK',
+#               'up_time': '12 days, 19 hours, 35 minutes, 44 seconds'},
+#    'RE1': {   'last_reboot_reason': '0x1:power cycle/failure',
+#               'model': 'RE-SRX210HE2',
+#               'status': 'OK',
+#               'up_time': '12 days, 19 hours, 18 minutes, 48 seconds'},
+#    'RE_hw_mi': True,
+#   ...
+#   ...
+#   {  'destination_port': '80',
+#      'destination_prefix': 'x.x.x.x',
+#      'protocol': 'tcp',
+#      'source_prefix': 'y.y.y.y'}
+#   OK - Session ID 31539 | bytes_in=3884785;bytes_out=3843606;;
+
 
 
 import sys
@@ -59,6 +85,9 @@ def get_session(source_ip, destination_ip, destination_port, protocol, device,
 
     try:
         dev.open()
+        if debug:
+            pp = pprint.PrettyPrinter(indent=4)
+            pp.pprint(dev.facts)
     except ConnectError as err:
         print "Cannot connect to device: {0}".format(err)
         sys.exit(1)
@@ -78,6 +107,10 @@ def get_session(source_ip, destination_ip, destination_port, protocol, device,
         flow_args['protocol'] = protocol
 
     flow_request = dev.rpc.get_flow_session_information(**flow_args)
+    if debug:
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(flow_args)
+
     dev.close()
 
     root = ET.fromstring(etree.tostring(flow_request))
