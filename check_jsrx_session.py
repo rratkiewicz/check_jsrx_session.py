@@ -117,7 +117,8 @@ def get_session(source_ip, destination_ip, destination_port, protocol, device,
     root = ET.fromstring(etree.tostring(flow_request))
     session_list = []
 
-    for session in root.findall('./multi-routing-engine-item/flow-session-information/flow-session'):
+    for session in root.findall('./multi-routing-engine-item/\
+    flow-session-information/flow-session'):
         session_state = session.find('session-state')
         session_identifier = session.find('session-identifier')
         policy = session.find('policy')
