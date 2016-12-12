@@ -1,58 +1,58 @@
 #!/usr/bin/env python
-"""#
-# Author: Ryan Ratkiewicz (<ryan ATSIGN ryanrat.com>)
-# check_jsrx_session.py
-# Last-Modified:  2016-12-12
-# Version 0.1.1
-#
-# get_session.py was originally intended to pull a specific session from the Juniper SRX Firewall
-# via PYEZ from a Nagios host. The script relies upon version 2.7 of Python, although earlier
-# versions may also work.
-#
-# Example:
-# python check_jsrx_session.py myfirewall.corp.com
-# Will return all sessions in the firewall in a pretty print format.
-#
-# python check_jsrx_session.py myfirewall.corp.com --src_address x.x.x.x --dst_address y.y.y.y
-#    --dst_port 80 --protocol tcp
-#    Will return all sessions that match specified criteria.
-#
-# python check_jsrx_session.py myfirewall.corp.com --src_address x.x.x.x --dst_address y.y.y.y
-#    --dst_port 80 --protocol tcp --nagios_bytes
-#    Will return all sessions that match specified criteria, but evaluate
-#    only the first match in a Nagios output format.
-#
-# Output Example:
-#    SESSION OK - Session ID 31432 | bytes_in=17515 bytes_out=4786 configured_timeout=43200
-#    timeout=43094
-#
-# python check_jsrx_session.py --username XXXXXX --password YYYYYYY
-# Will return all sessions, but leverage a username and password in lieu of SSH keys.
-#
-# python check_jsrx_session.py myfirewall.corp.com --src_address x.x.x.x --dst_address y.y.y.y
-#   --dst_port 80 --protocol tcp --nagios_bytes --debug
-#   Will return all sessions that match the specified critera, and also show the facts and
-#   session parameters sent to the SRX.
-# Output Exmaple:
-# {   '2RE': True,
-#
-#    'HOME': '/cf/var/home/user',
-#    'RE0': {   'last_reboot_reason': '0x1:power cycle/failure',
-#               'model': 'RE-SRX210HE2',
-#               'status': 'OK',
-#               'up_time': '12 days, 19 hours, 35 minutes, 44 seconds'},
-#    'RE1': {   'last_reboot_reason': '0x1:power cycle/failure',
-#               'model': 'RE-SRX210HE2',
-#               'status': 'OK',
-#               'up_time': '12 days, 19 hours, 18 minutes, 48 seconds'},
-#    'RE_hw_mi': True,
-#   ...
-#   ...
-#   {  'destination_port': '80',
-#      'destination_prefix': 'x.x.x.x',
-#      'protocol': 'tcp',
-#      'source_prefix': 'y.y.y.y'}
-#   OK - Session ID 31539 | bytes_in=3884785;bytes_out=3843606;;"""
+"""
+Author: Ryan Ratkiewicz (<ryan ATSIGN ryanrat.com>)
+check_jsrx_session.py
+Last-Modified:  2016-12-12
+Version 0.1.1
+
+get_session.py was originally intended to pull a specific session from the Juniper SRX Firewall
+via PYEZ from a Nagios host. The script relies upon version 2.7 of Python, although earlier
+versions may also work.
+
+Example:
+python check_jsrx_session.py myfirewall.corp.com
+Will return all sessions in the firewall in a pretty print format.
+
+python check_jsrx_session.py myfirewall.corp.com --src_address x.x.x.x --dst_address y.y.y.y
+   --dst_port 80 --protocol tcp
+   Will return all sessions that match specified criteria.
+
+python check_jsrx_session.py myfirewall.corp.com --src_address x.x.x.x --dst_address y.y.y.y
+   --dst_port 80 --protocol tcp --nagios_bytes
+   Will return all sessions that match specified criteria, but evaluate
+   only the first match in a Nagios output format.
+
+Output Example:
+   SESSION OK - Session ID 31432 | bytes_in=17515 bytes_out=4786 configured_timeout=43200
+   timeout=43094
+
+python check_jsrx_session.py --username XXXXXX --password YYYYYYY
+Will return all sessions, but leverage a username and password in lieu of SSH keys.
+
+python check_jsrx_session.py myfirewall.corp.com --src_address x.x.x.x --dst_address y.y.y.y
+  --dst_port 80 --protocol tcp --nagios_bytes --debug
+  Will return all sessions that match the specified critera, and also show the facts and
+  session parameters sent to the SRX.
+Output Exmaple:
+{   '2RE': True,
+
+   'HOME': '/cf/var/home/user',
+   'RE0': {   'last_reboot_reason': '0x1:power cycle/failure',
+              'model': 'RE-SRX210HE2',
+              'status': 'OK',
+              'up_time': '12 days, 19 hours, 35 minutes, 44 seconds'},
+   'RE1': {   'last_reboot_reason': '0x1:power cycle/failure',
+              'model': 'RE-SRX210HE2',
+              'status': 'OK',
+              'up_time': '12 days, 19 hours, 18 minutes, 48 seconds'},
+   'RE_hw_mi': True,
+  ...
+  ...
+  {  'destination_port': '80',
+     'destination_prefix': 'x.x.x.x',
+     'protocol': 'tcp',
+     'source_prefix': 'y.y.y.y'}
+  OK - Session ID 31539 | bytes_in=3884785;bytes_out=3843606;;"""
 
 
 
@@ -72,10 +72,12 @@ from jnpr.junos.exception import ConnectError
 
 def get_session(source_ip, destination_ip, destination_port, protocol, device,
                 username, password, debug):
-    """get_session returns a list of dictionary items that contain Juniper SRX session data based upon
-    # the input criteria given. device is the only mandatory field for this, as if no other options are
-    # specified, all sessions will be returned. if the SRX is clustered, Backup sessions from the
-    # passive device are not included in the list.  Netconf must be enabled on the firewall."""
+    """
+    get_session returns a list of dictionary items that contain Juniper SRX session data based upon
+    the input criteria given. device is the only mandatory field for this, as if no other options are
+    specified, all sessions will be returned. if the SRX is clustered, Backup sessions from the
+    passive device are not included in the list.  Netconf must be enabled on the firewall.
+    """
 
     if (username and password) != None:
         dev = Device(host=device, user=username, password=password)
@@ -154,12 +156,14 @@ def get_session(source_ip, destination_ip, destination_port, protocol, device,
 
 
 def main(argv):
-    """# Main declares a standard parser and passes the arguments to get_session.  Once
-    # the output is returned back to main, we evaluate if args.nagios is being used,
-    # and if so, it returns output that will allow Nagios to evaluate the health of
-    # the service, and also pass perf data after the '|' (pipe) delimiter.  If Nagios
-    # is not specified, the main function returns a pretty printed version of the
-    # session data."""
+    """
+    Main declares a standard parser and passes the arguments to get_session.  Once
+    the output is returned back to main, we evaluate if args.nagios is being used,
+    and if so, it returns output that will allow Nagios to evaluate the health of
+    the service, and also pass perf data after the '|' (pipe) delimiter.  If Nagios
+    is not specified, the main function returns a pretty printed version of the
+    session data.
+    """
 
     parser = argparse.ArgumentParser()
     nagiosGroup = parser.add_mutually_exclusive_group()
