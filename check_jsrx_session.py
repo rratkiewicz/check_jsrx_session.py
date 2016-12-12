@@ -18,7 +18,7 @@
 #    Will return all sessions that match specified criteria.
 #
 # python check_jsrx_session.py myfirewall.corp.com --src_address x.x.x.x --dst_address y.y.y.y
-#    --dst_port 80 --protocol tcp --nagios
+#    --dst_port 80 --protocol tcp --nagios_bytes
 #    Will return all sessions that match specified criteria, but evaluate
 #    only the first match in a Nagios output format.
 #
@@ -30,7 +30,7 @@
 # Will return all sessions, but leverage a username and password in lieu of SSH keys.
 #
 # python check_jsrx_session.py myfirewall.corp.com --src_address x.x.x.x --dst_address y.y.y.y
-#   --dst_port 80 --protocol tcp --debug
+#   --dst_port 80 --protocol tcp --nagios_bytes --debug
 #   Will return all sessions that match the specified critera, and also show the facts and
 #   session parameters sent to the SRX.
 # Output Exmaple:
